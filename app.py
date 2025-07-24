@@ -46,6 +46,12 @@ try:
             st.subheader(f"Lap Times - {driver}")
             try:
                 lap_df = driver_laps[["LapNumber", "LapTime", "Compound", "TyreLife", "PitOutTime", "PitInTime"]]
+
+                # Format times like F1TV
+                lap_df["LapTime"] = lap_df["LapTime"].apply(lambda x: str(x)[-10:] if pd.notnull(x) else "N/A")
+                lap_df["PitOutTime"] = lap_df["PitOutTime"].apply(lambda x: str(x)[-10:] if pd.notnull(x) else "N/A")
+                lap_df["PitInTime"] = lap_df["PitInTime"].apply(lambda x: str(x)[-10:] if pd.notnull(x) else "N/A")
+
                 st.dataframe(lap_df.fillna("N/A"))
 
                 if gpt_enabled:
