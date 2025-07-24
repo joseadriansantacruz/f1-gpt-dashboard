@@ -7,6 +7,7 @@ from openai import OpenAI
 import os
 
 # Enable FastF1 cache
+os.makedirs('/tmp/f1cache', exist_ok=True)
 fastf1.Cache.enable_cache('/tmp/f1cache')
 
 # Page setup
