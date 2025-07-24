@@ -10,7 +10,6 @@ fastf1.Cache.enable_cache('/tmp/f1cache')
 
 # Page setup
 st.set_page_config(page_title="F1 Live Dashboard", layout="wide")
-st.title("🏎️ Formula 1 Dashboard with GPT Commentary")
 
 # Sidebar - session and toggle options
 st.sidebar.header("Session Controls")
@@ -25,7 +24,18 @@ max_gpt_calls = st.sidebar.slider("Max GPT Commentary Calls", min_value=1, max_v
 # Mapping session type to FastF1 code
 session_map = {"Practice 1": 'FP1', "Practice 2": 'FP2', "Practice 3": 'FP3', "Qualifying": 'Q', "Race": 'R'}
 session_code = session_map[session_type]
-event_round = events.loc[events['EventName'] == selected_event_name]['RoundNumber'].values[0]
+event_data = events.loc[events['EventName'] == selected_event_name].iloc[0]
+event_round = event_data['RoundNumber']
+country = event_data['Country']
+country_flag = {
+    "Italy": "🇮🇹", "United Kingdom": "🇬🇧", "USA": "🇺🇸", "Canada": "🇨🇦", "Australia": "🇦🇺",
+    "Mexico": "🇲🇽", "Brazil": "🇧🇷", "France": "🇫🇷", "Germany": "🇩🇪", "Japan": "🇯🇵",
+    "Spain": "🇪🇸", "Austria": "🇦🇹", "Netherlands": "🇳🇱", "Belgium": "🇧🇪", "Singapore": "🇸🇬",
+    "Saudi Arabia": "🇸🇦", "Qatar": "🇶🇦", "China": "🇨🇳", "Hungary": "🇭🇺", "Monaco": "🇲🇨"
+}.get(country, "")
+
+# Dynamic Page Title
+st.title(f"{year} {selected_event_name} – {session_type} {country_flag}")
 
 # Load session and handle missing data gracefully
 try:
@@ -47,10 +57,18 @@ try:
             try:
                 lap_df = driver_laps[["LapNumber", "LapTime", "Compound", "TyreLife", "PitOutTime", "PitInTime"]]
 
-                # Format times like F1TV
-                lap_df["LapTime"] = lap_df["LapTime"].apply(lambda x: str(x)[-10:] if pd.notnull(x) else "N/A")
-                lap_df["PitOutTime"] = lap_df["PitOutTime"].apply(lambda x: str(x)[-10:] if pd.notnull(x) else "N/A")
-                lap_df["PitInTime"] = lap_df["PitInTime"].apply(lambda x: str(x)[-10:] if pd.notnull(x) else "N/A")
+                # Format times properly
+                def format_laptime(t):
+                    if pd.isnull(t):
+                        return "N/A"
+                    total_seconds = t.total_seconds()
+                    minutes = int(total_seconds // 60)
+                    seconds = total_seconds % 60
+                    return f"{minutes}:{seconds:06.3f}"  # e.g. 1:23.456
+
+                lap_df["LapTime"] = lap_df["LapTime"].apply(format_laptime)
+                lap_df["PitOutTime"] = lap_df["PitOutTime"].apply(format_laptime)
+                lap_df["PitInTime"] = lap_df["PitInTime"].apply(format_laptime)
 
                 st.dataframe(lap_df.fillna("N/A"))
 
