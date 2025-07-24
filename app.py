@@ -15,7 +15,7 @@ st.set_page_config(page_title="F1 Live Dashboard", layout="wide")
 st.sidebar.header("Session Controls")
 year = st.sidebar.selectbox("Select Year", list(range(2025, 2015, -1)))
 events = fastf1.get_event_schedule(year)
-gp_names = events['EventName']
+gp_names = events[~events['EventName'].str.contains("Testing", case=False)]['EventName']
 selected_event_name = st.sidebar.selectbox("Select Grand Prix", gp_names)
 session_type = st.sidebar.radio("Session", ["Practice 1", "Practice 2", "Practice 3", "Qualifying", "Race"])
 gpt_enabled = st.sidebar.checkbox("Enable GPT-4 Commentary", value=False)
